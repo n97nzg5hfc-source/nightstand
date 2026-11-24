@@ -135,6 +135,8 @@ let alarmAudioTimer = null;
 let activeAlarm = null;
 let lastTriggeredMinute = "";
 let snoozeUntil = null;
+let snoozedAlarm = null;
+let editingAlarmId = null;
 
 function saveAlarms() {
   localStorage.setItem(ALARM_KEY, JSON.stringify(alarms));
@@ -213,6 +215,58 @@ function updateNextAlarm() {
     `${nextAlarm.alarm.name} · ${getDaysText(nextAlarm.alarm.days)}`;
 }
 
+// ALARM EDITING CONTROLS
+const addButton = $("add-alarm");
+
+const cancelEditButton = document.createElement("button");
+cancelEditButton.type = "button";
+cancelEditButton.textContent = "Cancel editing";
+cancelEditButton.hidden = true;
+cancelEditButton.style.cssText =
+  "min-height:44px;padding:12px;border:1px solid #50647e;border-radius:10px;background:#172840;color:white;cursor:pointer;";
+
+addButton.insertAdjacentElement("afterend", cancelEditButton);
+
+function resetAlarmForm() {
+  editingAlarmId = null;
+  addButton.textContent = "+ Add alarm";
+  cancelEditButton.hidden = true;
+
+  $("alarm-name").value = "";
+
+  document.querySelectorAll(".alarm-days input").forEach(input => {
+    input.checked = false;
+  });
+}
+
+cancelEditButton.addEventListener("click", resetAlarmForm);
+
+function startEditingAlarm(alarm) {
+  editingAlarmId = alarm.id;
+
+  $("alarm-time").value = alarm.time;
+  $("alarm-name").value = alarm.name || "";
+  $("alarm-sound").value = alarm.sound || "gentle";
+  $("alarm-gradual").checked = alarm.gradual !== false;
+
+  const selectedDays = alarm.days || [];
+
+  document.querySelectorAll(".alarm-days input").forEach(input => {
+    input.checked = selectedDays.includes(Number(input.value));
+  });
+
+  addButton.textContent = "Save changes";
+  cancelEditButton.hidden = false;
+
+  showPage("alarms");
+
+  $("alarm-time").scrollIntoView({
+    behavior: "smooth",
+    block: "center"
+  });
+}
+
+// RENDER ALARMS
 function renderAlarms() {
   const list = $("alarm-list");
 
@@ -234,6 +288,7 @@ function renderAlarms() {
     const [hours, minutes] = alarm.time.split(":").map(Number);
     const date = new Date();
     date.setHours(hours, minutes, 0, 0);
+
     time.textContent = date.toLocaleTimeString([], {
       hour: "numeric",
       minute: "2-digit"
@@ -250,6 +305,7 @@ function renderAlarms() {
     actions.style.display = "flex";
     actions.style.gap = "7px";
     actions.style.alignItems = "center";
+    actions.style.flexWrap = "wrap";
 
     const toggleLabel = document.createElement("label");
     toggleLabel.style.display = "flex";
@@ -262,6 +318,7 @@ function renderAlarms() {
     toggle.type = "checkbox";
     toggle.checked = alarm.enabled;
     toggle.setAttribute("aria-label", "Enable alarm");
+
     toggle.addEventListener("change", () => {
       alarm.enabled = toggle.checked;
       saveAlarms();
@@ -270,15 +327,27 @@ function renderAlarms() {
 
     toggleLabel.append(toggle, document.createTextNode("On"));
 
+    const edit = document.createElement("button");
+    edit.textContent = "Edit";
+
+    edit.addEventListener("click", () => {
+      startEditingAlarm(alarm);
+    });
+
     const remove = document.createElement("button");
     remove.textContent = "Delete";
+
     remove.addEventListener("click", () => {
+      if (editingAlarmId === alarm.id) {
+        resetAlarmForm();
+      }
+
       alarms = alarms.filter(item => item.id !== alarm.id);
       saveAlarms();
       renderAlarms();
     });
 
-    actions.append(toggleLabel, remove);
+    actions.append(toggleLabel, edit, remove);
     card.append(info, actions);
     list.append(card);
   });
@@ -286,7 +355,8 @@ function renderAlarms() {
   updateNextAlarm();
 }
 
-$("add-alarm").addEventListener("click", async () => {
+// ADD OR SAVE ALARM
+addButton.addEventListener("click", async () => {
   const time = $("alarm-time").value;
   const name = $("alarm-name").value.trim() || "Alarm";
   const sound = $("alarm-sound").value;
@@ -301,39 +371,55 @@ $("add-alarm").addEventListener("click", async () => {
     document.querySelectorAll(".alarm-days input:checked")
   ).map(input => Number(input.value));
 
-  // Enable audio after a user interaction.
   try {
     const Audio = window.AudioContext || window.webkitAudioContext;
+
     if (Audio && !audioContext) audioContext = new Audio();
+
     if (audioContext && audioContext.state === "suspended") {
       await audioContext.resume();
     }
   } catch {}
 
-  alarms.push({
-    id: Date.now().toString(),
-    time,
-    name,
-    sound,
-    gradual,
-    days,
-    enabled: true
-  });
+  if (editingAlarmId !== null) {
+    const existingAlarm = alarms.find(
+      alarm => alarm.id === editingAlarmId
+    );
+
+    if (existingAlarm) {
+      existingAlarm.time = time;
+      existingAlarm.name = name;
+      existingAlarm.sound = sound;
+      existingAlarm.gradual = gradual;
+      existingAlarm.days = days;
+    }
+
+    resetAlarmForm();
+  } else {
+    alarms.push({
+      id: Date.now().toString(),
+      time,
+      name,
+      sound,
+      gradual,
+      days,
+      enabled: true
+    });
+
+    resetAlarmForm();
+  }
 
   saveAlarms();
   renderAlarms();
-
-  $("alarm-name").value = "";
-  document.querySelectorAll(".alarm-days input").forEach(input => {
-    input.checked = false;
-  });
 });
 
+// ALARM SOUND
 function stopAlarmSound() {
   if (alarmAudioTimer) {
     clearInterval(alarmAudioTimer);
     alarmAudioTimer = null;
   }
+
   activeAlarm = null;
 }
 
@@ -374,6 +460,7 @@ function playAlarmSound(alarm) {
       volume,
       audioContext.currentTime + 0.08
     );
+
     gain.gain.setTargetAtTime(
       0,
       audioContext.currentTime + 0.6,
@@ -392,7 +479,11 @@ function playAlarmSound(alarm) {
   alarmAudioTimer = setInterval(playNote, 1000);
 }
 
+// ALARM ALERT
 function showAlarmAlert(alarm) {
+  const oldOverlay = $("nightstand-alarm-alert");
+  if (oldOverlay) oldOverlay.remove();
+
   const overlay = document.createElement("div");
   overlay.id = "nightstand-alarm-alert";
 
@@ -434,14 +525,19 @@ function showAlarmAlert(alarm) {
     "padding:15px;margin:12px 5px;border:1px solid #50647e;border-radius:10px;background:#172840;color:white;font-weight:bold;";
 
   snooze.addEventListener("click", () => {
+    snoozedAlarm = alarm;
     snoozeUntil = Date.now() + 10 * 60 * 1000;
+
     stopAlarmSound();
     overlay.remove();
   });
 
   dismiss.addEventListener("click", () => {
     stopAlarmSound();
+
     snoozeUntil = null;
+    snoozedAlarm = null;
+
     overlay.remove();
 
     if (!alarm.days.length) {
@@ -456,17 +552,23 @@ function showAlarmAlert(alarm) {
   document.body.append(overlay);
 }
 
+// CHECK ALARMS
 function checkAlarms() {
   const now = new Date();
+
   const minuteKey =
     `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}-${now.getHours()}-${now.getMinutes()}`;
 
+  // Check snooze first.
   if (snoozeUntil && Date.now() >= snoozeUntil) {
-    snoozeUntil = null;
+    const alarmToRestart = snoozedAlarm;
 
-    if (activeAlarm) {
-      playAlarmSound(activeAlarm);
-      showAlarmAlert(activeAlarm);
+    snoozeUntil = null;
+    snoozedAlarm = null;
+
+    if (alarmToRestart) {
+      playAlarmSound(alarmToRestart);
+      showAlarmAlert(alarmToRestart);
     }
   }
 
@@ -476,6 +578,7 @@ function checkAlarms() {
   if (activeAlarm || snoozeUntil) return;
 
   const today = now.getDay();
+
   const currentTime =
     `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
 
@@ -491,10 +594,6 @@ function checkAlarms() {
     audioContext.resume().catch(() => {});
   }
 
-  if (!due.days.length) {
-    // One-time alarms are disabled when dismissed.
-  }
-
   playAlarmSound(due);
   showAlarmAlert(due);
 }
@@ -508,11 +607,13 @@ if ("getBattery" in navigator) {
     const render = () => {
       $("battery-value").textContent =
         `${Math.round(battery.level * 100)}%`;
+
       $("battery-caption").textContent =
         battery.charging ? "Charging" : "On battery";
     };
 
     render();
+
     battery.addEventListener("levelchange", render);
     battery.addEventListener("chargingchange", render);
   }).catch(() => {});
