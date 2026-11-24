@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -20,17 +21,17 @@
         <div class="clock-panel panel">
           <div class="eyebrow">GOOD EVENING</div>
           <div class="clock" id="clock">--:--</div>
-          <div class="clock-meta"><span id="date">Loading date…</span><span class="clock-divider"></span><span id="day"> </span></div>
+          <div class="clock-meta"><span id="date">Loading date…</span><span class="clock-divider"></span><span id="day"></span></div>
           <div class="clock-bottom">
             <div class="clock-mini"><span class="mini-label">NEXT ALARM</span><strong id="clock-alarm">Not set</strong></div>
-            <div class="clock-mini"><span class="mini-label">WEATHER</span><strong id="clock-weather">Connect later</strong></div>
+            <div class="clock-mini"><span class="mini-label">WEATHER</span><strong id="clock-weather">Loading…</strong></div>
           </div>
         </div>
 
         <div class="widget-grid">
           <article class="widget weather span-2">
             <div class="widget-head"><span class="widget-icon">☁</span><span class="widget-label">WEATHER</span><span class="widget-more">•••</span></div>
-            <div class="weather-main"><div><div class="weather-temp">--°</div><div class="muted">Weather connection coming soon</div></div><div class="weather-art">☁</div></div>
+            <div class="weather-main"><div><div class="weather-temp">--°</div><div class="muted">Loading weather…</div></div><div class="weather-art">☁</div></div>
             <div class="weather-foot"><span>LOCATION</span><strong>Not connected</strong></div>
           </article>
 
@@ -87,15 +88,89 @@
 
     <main id="alarms-page" class="page">
       <section class="section-page panel">
-        <div class="eyebrow">YOUR SCHEDULE</div><h1>Alarms</h1>
-        <p class="muted">We'll build custom alarms, repeat days, sound choices, and snooze controls here. Web alarms may not reliably sound when Safari is suspended, so the iPad Clock app should remain your dependable backup.</p>
-        <div class="coming-card">ALARM CONTROLS <span>COMING IN THE NEXT BUILD</span></div>
+        <div class="eyebrow">YOUR SCHEDULE</div>
+        <h1>Alarms</h1>
+        <p class="muted">Create and manage your alarms.</p>
+
+        <div class="alarm-builder">
+          <h2>Create an alarm</h2>
+
+          <label for="alarm-time">Alarm time</label>
+          <input type="time" id="alarm-time" value="07:00">
+
+          <label for="alarm-name">Alarm name</label>
+          <input type="text" id="alarm-name" placeholder="Morning alarm">
+
+          <label>Repeat on</label>
+          <div class="alarm-days">
+            <label><input type="checkbox" value="1"> Mon</label>
+            <label><input type="checkbox" value="2"> Tue</label>
+            <label><input type="checkbox" value="3"> Wed</label>
+            <label><input type="checkbox" value="4"> Thu</label>
+            <label><input type="checkbox" value="5"> Fri</label>
+            <label><input type="checkbox" value="6"> Sat</label>
+            <label><input type="checkbox" value="0"> Sun</label>
+          </div>
+
+          <label for="alarm-sound">Alarm sound</label>
+          <select id="alarm-sound">
+            <option value="gentle">Gentle</option>
+            <option value="digital">Digital</option>
+            <option value="classic">Classic</option>
+          </select>
+
+          <label class="volume-option">
+            <input type="checkbox" id="alarm-gradual" checked>
+            Gradually increase volume
+          </label>
+
+          <button id="add-alarm" type="button">+ Add alarm</button>
+        </div>
+
+        <h2>Your alarms</h2>
+        <div id="alarm-list">
+          <p class="muted">No alarms created yet.</p>
+        </div>
+
+        <p class="muted">Important: browser alarms may not sound when NIGHTSTAND is closed or suspended. Keep the iPad Clock app as your reliable backup.</p>
       </section>
     </main>
-    <main id="calendar-page" class="page"><section class="section-page panel"><div class="eyebrow">YOUR DAY</div><h1>Calendar</h1><p class="muted">Google Calendar connection and event display will be added here.</p><div class="coming-card">CALENDAR INTEGRATION <span>COMING SOON</span></div></section></main>
-    <main id="news-page" class="page"><section class="section-page panel"><div class="eyebrow">STAY INFORMED</div><h1>News</h1><p class="muted">We'll add live headlines with categories for World, US, Technology, Science, and Sports.</p><div class="coming-card">NEWS FEED <span>COMING SOON</span></div></section></main>
-    <main id="music-page" class="page"><section class="section-page panel"><div class="eyebrow">YOUR SOUNDTRACK</div><h1>Apple Music</h1><p class="muted">We'll connect your Apple Music account using Apple's MusicKit for the web. You'll authorize access before your library and playback controls appear.</p><div class="coming-card">APPLE MUSIC CONNECTION <span>COMING SOON</span></div></section></main>
-    <main id="more-page" class="page"><section class="section-page panel"><div class="eyebrow">PREFERENCES</div><h1>More</h1><p class="muted">Settings, reminders, and future NIGHTSTAND features will live here.</p><div class="coming-card">SETTINGS <span>COMING SOON</span></div></section></main>
+
+    <main id="calendar-page" class="page">
+      <section class="section-page panel">
+        <div class="eyebrow">YOUR DAY</div>
+        <h1>Calendar</h1>
+        <p class="muted">Google Calendar connection and event display will be added here.</p>
+        <div class="coming-card">CALENDAR INTEGRATION <span>COMING SOON</span></div>
+      </section>
+    </main>
+
+    <main id="news-page" class="page">
+      <section class="section-page panel">
+        <div class="eyebrow">STAY INFORMED</div>
+        <h1>News</h1>
+        <p class="muted">We'll add live headlines with categories for World, US, Technology, Science, and Sports.</p>
+        <div class="coming-card">NEWS FEED <span>COMING SOON</span></div>
+      </section>
+    </main>
+
+    <main id="music-page" class="page">
+      <section class="section-page panel">
+        <div class="eyebrow">YOUR SOUNDTRACK</div>
+        <h1>Apple Music</h1>
+        <p class="muted">We'll connect your Apple Music account using Apple's MusicKit for the web. You'll authorize access before your library and playback controls appear.</p>
+        <div class="coming-card">APPLE MUSIC CONNECTION <span>COMING SOON</span></div>
+      </section>
+    </main>
+
+    <main id="more-page" class="page">
+      <section class="section-page panel">
+        <div class="eyebrow">PREFERENCES</div>
+        <h1>More</h1>
+        <p class="muted">Settings, reminders, and future NIGHTSTAND features will live here.</p>
+        <div class="coming-card">SETTINGS <span>COMING SOON</span></div>
+      </section>
+    </main>
 
     <nav class="bottom-nav" aria-label="Main navigation">
       <button class="nav-item selected" data-page="home"><span>⌂</span>HOME</button>
