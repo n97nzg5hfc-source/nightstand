@@ -1,0 +1,10 @@
+{
+  "name": "NIGHTSTAND",
+  "short_name": "NIGHTSTAND",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#080d18",
+  "theme_color": "#080d18",
+  "description": "A dedicated bedside dashboard"
+}
