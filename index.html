@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#080d18">
+  <title>NIGHTSTAND</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark"></span><span>NIGHTSTAND</span></div>
+      <div class="top-status"><span class="live-dot"></span><span id="connection">LOCAL DASHBOARD</span><span class="top-date" id="top-date"></span></div>
+    </header>
+
+    <main id="home-page" class="page active">
+      <section class="dashboard">
+        <div class="clock-panel panel">
+          <div class="eyebrow">GOOD EVENING</div>
+          <div class="clock" id="clock">--:--</div>
+          <div class="clock-meta"><span id="date">Loading date…</span><span class="clock-divider"></span><span id="day"> </span></div>
+          <div class="clock-bottom">
+            <div class="clock-mini"><span class="mini-label">NEXT ALARM</span><strong id="clock-alarm">Not set</strong></div>
+            <div class="clock-mini"><span class="mini-label">WEATHER</span><strong id="clock-weather">Connect later</strong></div>
+          </div>
+        </div>
+
+        <div class="widget-grid">
+          <article class="widget weather span-2">
+            <div class="widget-head"><span class="widget-icon">☁</span><span class="widget-label">WEATHER</span><span class="widget-more">•••</span></div>
+            <div class="weather-main"><div><div class="weather-temp">--°</div><div class="muted">Weather connection coming soon</div></div><div class="weather-art">☁</div></div>
+            <div class="weather-foot"><span>LOCATION</span><strong>Not connected</strong></div>
+          </article>
+
+          <article class="widget alarm">
+            <div class="widget-head"><span class="widget-icon">◷</span><span class="widget-label">NEXT ALARM</span></div>
+            <div class="widget-value" id="alarm-value">--:--</div>
+            <div class="muted" id="alarm-caption">No alarm scheduled</div>
+            <button class="text-action" data-page="alarms">MANAGE ALARMS <span>↗</span></button>
+          </article>
+
+          <article class="widget calendar">
+            <div class="widget-head"><span class="widget-icon">▦</span><span class="widget-label">UPCOMING</span></div>
+            <div class="widget-value small-value">Your calendar</div>
+            <div class="muted">Connect Google Calendar later</div>
+            <button class="text-action" data-page="calendar">OPEN CALENDAR <span>↗</span></button>
+          </article>
+
+          <article class="widget reminders">
+            <div class="widget-head"><span class="widget-icon">☷</span><span class="widget-label">REMINDERS</span></div>
+            <div class="widget-value small-value">All clear</div>
+            <div class="muted">Your reminders will appear here</div>
+            <button class="text-action" data-page="reminders">VIEW REMINDERS <span>↗</span></button>
+          </article>
+
+          <article class="widget battery">
+            <div class="widget-head"><span class="widget-icon">▰</span><span class="widget-label">DEVICE</span></div>
+            <div class="widget-value" id="battery-value">—</div>
+            <div class="muted" id="battery-caption">Battery status unavailable</div>
+          </article>
+
+          <article class="widget notifications">
+            <div class="widget-head"><span class="widget-icon">♧</span><span class="widget-label">NOTIFICATIONS</span></div>
+            <div class="widget-value small-value">You're all caught up</div>
+            <div class="muted">Notification integration comes later</div>
+          </article>
+
+          <article class="widget news span-2">
+            <div class="widget-head"><span class="widget-icon">▤</span><span class="widget-label">TOP STORIES</span><button class="small-link" data-page="news">ALL NEWS ↗</button></div>
+            <div class="news-placeholder"><span class="news-line"></span><span class="news-line short"></span><span class="news-line shorter"></span></div>
+            <div class="muted">News headlines will load when we connect a news source.</div>
+          </article>
+
+          <article class="widget music span-2">
+            <div class="widget-head"><span class="widget-icon">♫</span><span class="widget-label">APPLE MUSIC</span><span class="music-status">NOT CONNECTED</span></div>
+            <div class="music-content">
+              <div class="album-art">♫</div>
+              <div class="track-info"><strong>Nothing playing</strong><span>Connect your Apple Music account later</span></div>
+              <div class="music-controls"><button aria-label="Previous track" disabled>‹</button><button class="play-button" aria-label="Play" disabled>▶</button><button aria-label="Next track" disabled>›</button></div>
+            </div>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <main id="alarms-page" class="page">
+      <section class="section-page panel">
+        <div class="eyebrow">YOUR SCHEDULE</div><h1>Alarms</h1>
+        <p class="muted">We'll build custom alarms, repeat days, sound choices, and snooze controls here. Web alarms may not reliably sound when Safari is suspended, so the iPad Clock app should remain your dependable backup.</p>
+        <div class="coming-card">ALARM CONTROLS <span>COMING IN THE NEXT BUILD</span></div>
+      </section>
+    </main>
+    <main id="calendar-page" class="page"><section class="section-page panel"><div class="eyebrow">YOUR DAY</div><h1>Calendar</h1><p class="muted">Google Calendar connection and event display will be added here.</p><div class="coming-card">CALENDAR INTEGRATION <span>COMING SOON</span></div></section></main>
+    <main id="news-page" class="page"><section class="section-page panel"><div class="eyebrow">STAY INFORMED</div><h1>News</h1><p class="muted">We'll add live headlines with categories for World, US, Technology, Science, and Sports.</p><div class="coming-card">NEWS FEED <span>COMING SOON</span></div></section></main>
+    <main id="music-page" class="page"><section class="section-page panel"><div class="eyebrow">YOUR SOUNDTRACK</div><h1>Apple Music</h1><p class="muted">We'll connect your Apple Music account using Apple's MusicKit for the web. You'll authorize access before your library and playback controls appear.</p><div class="coming-card">APPLE MUSIC CONNECTION <span>COMING SOON</span></div></section></main>
+    <main id="more-page" class="page"><section class="section-page panel"><div class="eyebrow">PREFERENCES</div><h1>More</h1><p class="muted">Settings, reminders, and future NIGHTSTAND features will live here.</p><div class="coming-card">SETTINGS <span>COMING SOON</span></div></section></main>
+
+    <nav class="bottom-nav" aria-label="Main navigation">
+      <button class="nav-item selected" data-page="home"><span>⌂</span>HOME</button>
+      <button class="nav-item" data-page="alarms"><span>◷</span>ALARM</button>
+      <button class="nav-item" data-page="calendar"><span>▦</span>CALENDAR</button>
+      <button class="nav-item" data-page="news"><span>▤</span>NEWS</button>
+      <button class="nav-item" data-page="music"><span>♫</span>MUSIC</button>
+      <button class="nav-item" data-page="more"><span>⋯</span>MORE</button>
+    </nav>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
