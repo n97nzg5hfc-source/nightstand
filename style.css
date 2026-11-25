@@ -27,7 +27,6 @@ body {
 }
 
 button, input, select { font: inherit; }
-
 button { cursor: pointer; }
 
 .app-shell {
@@ -136,13 +135,14 @@ button { cursor: pointer; }
 .clock-meta {
   display:flex;
   align-items:center;
-  gap:12px;
+  gap:14px;
   color:var(--muted);
-  font-size:13px;
+  font-size:17px;
+  font-weight:450;
 }
 
 .clock-divider {
-  height:13px;
+  height:16px;
   width:1px;
   background:#465a75;
 }
@@ -743,4 +743,3 @@ button { cursor: pointer; }
     flex: 1 1 20%;
   }
 }
-
