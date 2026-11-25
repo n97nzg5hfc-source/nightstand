@@ -22,7 +22,6 @@
 
     <main id="home-page" class="page active">
       <section class="dashboard">
-
         <div class="clock-panel panel">
           <div class="eyebrow">GOOD EVENING</div>
           <div class="clock" id="clock">--:--</div>
@@ -34,7 +33,6 @@
         </div>
 
         <div class="widget-grid">
-
           <article class="widget weather span-2">
             <div class="widget-head">
               <span class="widget-icon">☁</span>
@@ -111,7 +109,6 @@
               </div>
             </div>
           </article>
-
         </div>
       </section>
     </main>
@@ -194,12 +191,75 @@
       <section class="section-page panel">
         <div class="eyebrow">YOUR SOUNDTRACK</div>
         <h1>Apple Music</h1>
-        <p class="muted">
-          We'll connect your Apple Music account using Apple's MusicKit
-          for the web. You'll authorize access before your library and
-          playback controls appear.
-        </p>
-        <div class="coming-card">APPLE MUSIC CONNECTION <span>COMING SOON</span></div>
+        <p class="muted">Your music, all in one place.</p>
+
+        <div class="music-player">
+          <div class="music-player-art" id="player-art">
+            <span>♫</span>
+          </div>
+
+          <div class="music-player-info">
+            <strong id="player-title">Nothing playing</strong>
+            <span id="player-artist">Choose a song to get started</span>
+          </div>
+
+          <div class="music-progress">
+            <span id="player-current-time">0:00</span>
+            <div class="progress-track">
+              <div class="progress-fill" id="player-progress"></div>
+            </div>
+            <span id="player-duration">0:00</span>
+          </div>
+
+          <div class="player-controls">
+            <button id="player-shuffle" aria-label="Shuffle" disabled>⤨</button>
+            <button id="player-previous" aria-label="Previous" disabled>Ⅱ</button>
+            <button id="player-play" class="player-play-button" aria-label="Play" disabled>▶</button>
+            <button id="player-next" aria-label="Next" disabled>Ⅱ</button>
+            <button id="player-repeat" aria-label="Repeat" disabled>⟳</button>
+          </div>
+
+          <div class="music-connect-area">
+            <span class="music-status" id="music-connection-status">NOT CONNECTED</span>
+            <button id="connect-apple-music" type="button">
+              Connect Apple Music
+            </button>
+          </div>
+        </div>
+
+        <div class="music-library">
+          <h2>Search Music</h2>
+          <input
+            type="search"
+            id="music-search"
+            placeholder="Search songs, artists, albums..."
+          >
+          <div id="music-search-results">
+            <p class="muted">Connect Apple Music to search for music.</p>
+          </div>
+
+          <h2>Your Library</h2>
+          <div class="music-library-grid">
+            <div class="music-library-card">
+              <span>♫</span>
+              <strong>Playlists</strong>
+            </div>
+            <div class="music-library-card">
+              <span>▣</span>
+              <strong>Albums</strong>
+            </div>
+            <div class="music-library-card">
+              <span>♪</span>
+              <strong>Songs</strong>
+            </div>
+            <div class="music-library-card">
+              <span>◷</span>
+              <strong>Recently Played</strong>
+            </div>
+          </div>
+
+          <div id="music-library-content"></div>
+        </div>
       </section>
     </main>
 
