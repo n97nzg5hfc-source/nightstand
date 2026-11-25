@@ -606,3 +606,316 @@ if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
     navigator.serviceWorker.register("./sw.js").catch(() => {});
   });
 }
+
+// =====================================
+// NIGHTSTAND LIVE NEWS
+// =====================================
+
+const NEWS_PROXY = "https://proxy.cors.dev/";
+const NEWS_EDITION = "?hl=en-US&gl=US&ceid=US:en";
+
+const NEWS_CATEGORIES = {
+  "World": "WORLD",
+  "US": "NATION",
+  "Technology": "TECHNOLOGY",
+  "Science": "SCIENCE",
+  "Sports": "SPORTS"
+};
+
+let currentNewsCategory = "World";
+let newsCache = {};
+let newsLoading = false;
+
+const newsPage = $("news-page");
+const newsSection = newsPage.querySelector(".section-page");
+const newsComingCard = newsSection.querySelector(".coming-card");
+
+const newsControls = document.createElement("div");
+newsControls.id = "news-controls";
+newsControls.style.cssText =
+  "display:flex;flex-wrap:wrap;gap:9px;margin:28px 0 20px;";
+
+const newsList = document.createElement("div");
+newsList.id = "news-list";
+newsList.style.cssText =
+  "display:flex;flex-direction:column;gap:12px;";
+
+const newsRefresh = document.createElement("button");
+newsRefresh.textContent = "↻ Refresh news";
+newsRefresh.style.cssText =
+  "margin:0 0 20px;padding:11px 15px;border:1px solid #41536b;border-radius:9px;background:#172840;color:#dce7f5;";
+
+newsComingCard.replaceWith(newsControls, newsRefresh, newsList);
+
+function createNewsButton(label, selected) {
+  const button = document.createElement("button");
+  button.textContent = label;
+  button.style.cssText = `
+    padding:11px 15px;
+    border:1px solid ${selected ? "#9bb7dc" : "#344963"};
+    border-radius:9px;
+    background:${selected ? "#263d5b" : "#122139"};
+    color:#f4f7fc;
+    font-size:12px;
+  `;
+
+  button.addEventListener("click", () => {
+    currentNewsCategory = label;
+    renderNewsButtons();
+    loadNews(label);
+  });
+
+  return button;
+}
+
+function renderNewsButtons() {
+  newsControls.replaceChildren();
+
+  Object.keys(NEWS_CATEGORIES).forEach(category => {
+    newsControls.append(
+      createNewsButton(category, category === currentNewsCategory)
+    );
+  });
+}
+
+function createNewsCard(article) {
+  const card = document.createElement("article");
+
+  card.style.cssText = `
+    padding:19px;
+    border:1px solid #2b3d56;
+    border-radius:13px;
+    background:linear-gradient(145deg,#101d31,#0c1728);
+  `;
+
+  const title = document.createElement("a");
+  title.textContent = article.title;
+  title.href = article.link;
+  title.target = "_blank";
+  title.rel = "noopener noreferrer";
+  title.style.cssText = `
+    display:block;
+    color:#edf4fc;
+    font-size:16px;
+    font-weight:600;
+    line-height:1.4;
+    text-decoration:none;
+  `;
+
+  const details = document.createElement("div");
+  details.textContent = [
+    article.source,
+    article.date
+  ].filter(Boolean).join(" · ");
+
+  details.style.cssText =
+    "margin-top:10px;color:#98a8bf;font-size:11px;";
+
+  const readMore = document.createElement("a");
+  readMore.href = article.link;
+  readMore.target = "_blank";
+  readMore.rel = "noopener noreferrer";
+  readMore.textContent = "READ STORY ↗";
+  readMore.style.cssText = `
+    display:inline-block;
+    margin-top:13px;
+    color:#a9c0df;
+    font-size:10px;
+    font-weight:700;
+    letter-spacing:.1em;
+    text-decoration:none;
+  `;
+
+  card.append(title, details, readMore);
+  return card;
+}
+
+async function getNewsFeed(feedUrl) {
+  const response = await fetch(NEWS_PROXY + feedUrl);
+
+  if (!response.ok) {
+    throw new Error("News feed request failed");
+  }
+
+  const xml = new DOMParser().parseFromString(
+    await response.text(),
+    "text/xml"
+  );
+
+  const root = xml.documentElement;
+
+  if (
+    !["rss", "feed", "RDF"].includes(root.localName) ||
+    xml.querySelector("parsererror")
+  ) {
+    throw new Error("Invalid news feed");
+  }
+
+  const isAtom = root.localName === "feed";
+  const items = [...root.querySelectorAll(
+    isAtom ? "entry" : "item"
+  )];
+
+  return items.map(item => {
+    const title = item.querySelector("title")?.textContent?.trim() || "";
+
+    let link = "";
+
+    if (isAtom) {
+      link =
+        item.querySelector('link[rel="alternate"]')?.getAttribute("href") ||
+        item.querySelector("link")?.getAttribute("href") ||
+        "";
+    } else {
+      link = item.querySelector("link")?.textContent?.trim() || "";
+    }
+
+    const source = item.querySelector("source")?.textContent?.trim() || "";
+
+    const dateText =
+      item.querySelector("pubDate")?.textContent?.trim() ||
+      item.querySelector("published")?.textContent?.trim() ||
+      item.querySelector("updated")?.textContent?.trim() ||
+      "";
+
+    const date = dateText
+      ? new Date(dateText).toLocaleString([], {
+          month: "short",
+          day: "numeric",
+          hour: "numeric",
+          minute: "2-digit"
+        })
+      : "";
+
+    return { title, link, source, date };
+  }).filter(article => article.title && article.link);
+}
+
+async function loadNews(category, forceRefresh = false) {
+  if (newsLoading) return;
+
+  const cached = newsCache[category];
+
+  if (
+    !forceRefresh &&
+    cached &&
+    Date.now() - cached.time < 10 * 60 * 1000
+  ) {
+    displayNews(cached.articles);
+    return;
+  }
+
+  newsLoading = true;
+  newsList.replaceChildren();
+
+  const loading = document.createElement("p");
+  loading.textContent = "Loading the latest headlines…";
+  loading.className = "muted";
+  newsList.append(loading);
+
+  try {
+    const topic = NEWS_CATEGORIES[category];
+
+    const feedUrl =
+      `https://news.google.com/rss/headlines/section/topic/${topic}${NEWS_EDITION}`;
+
+    const articles = await getNewsFeed(feedUrl);
+
+    newsCache[category] = {
+      articles,
+      time: Date.now()
+    };
+
+    displayNews(articles);
+  } catch (error) {
+    newsList.replaceChildren();
+
+    const message = document.createElement("p");
+    message.className = "muted";
+    message.textContent =
+      "News could not load. Check your internet connection and try refreshing.";
+
+    newsList.append(message);
+  } finally {
+    newsLoading = false;
+  }
+}
+
+function displayNews(articles) {
+  newsList.replaceChildren();
+
+  if (!articles.length) {
+    const empty = document.createElement("p");
+    empty.className = "muted";
+    empty.textContent = "No headlines are available right now.";
+    newsList.append(empty);
+    return;
+  }
+
+  articles.forEach(article => {
+    newsList.append(createNewsCard(article));
+  });
+}
+
+// HOME DASHBOARD TOP STORIES
+async function updateHomeNews() {
+  const homeNews = document.querySelector(".news");
+  if (!homeNews) return;
+
+  const placeholder = homeNews.querySelector(".news-placeholder");
+  const description = homeNews.querySelector(".muted");
+
+  try {
+    const feedUrl =
+      `https://news.google.com/rss?${NEWS_EDITION.slice(1)}`;
+
+    const articles = await getNewsFeed(feedUrl);
+
+    if (placeholder) placeholder.remove();
+
+    const headlineArea = document.createElement("div");
+    headlineArea.style.cssText =
+      "display:flex;flex-direction:column;gap:10px;margin-top:15px;";
+
+    articles.slice(0, 3).forEach(article => {
+      const link = document.createElement("a");
+      link.textContent = article.title;
+      link.href = article.link;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.style.cssText = `
+        color:#dce7f5;
+        font-size:12px;
+        line-height:1.4;
+        text-decoration:none;
+      `;
+      headlineArea.append(link);
+    });
+
+    if (description) description.remove();
+
+    const oldHeadlines = homeNews.querySelector(".home-news-headlines");
+    if (oldHeadlines) oldHeadlines.remove();
+
+    headlineArea.className = "home-news-headlines";
+    homeNews.append(headlineArea);
+  } catch (error) {
+    if (description) {
+      description.textContent = "News temporarily unavailable.";
+    }
+  }
+}
+
+newsRefresh.addEventListener("click", () => {
+  loadNews(currentNewsCategory, true);
+});
+
+renderNewsButtons();
+loadNews("World");
+updateHomeNews();
+
+// Refresh news every 15 minutes
+setInterval(() => {
+  loadNews(currentNewsCategory, true);
+  updateHomeNews();
+}, 15 * 60 * 1000);
