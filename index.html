@@ -100,7 +100,7 @@
               <div class="album-art">♫</div>
               <div class="track-info">
                 <strong>Nothing playing</strong>
-                <span>Connect your Apple Music account later</span>
+                <span>Open Music to choose a playlist</span>
               </div>
               <div class="music-controls">
                 <button aria-label="Previous track" disabled>‹</button>
@@ -193,73 +193,50 @@
         <h1>Apple Music</h1>
         <p class="muted">Your music, all in one place.</p>
 
-        <div class="music-player">
-          <div class="music-player-art" id="player-art">
-            <span>♫</span>
-          </div>
+        <h2>Your Playlists</h2>
+        <p class="muted">Choose a playlist to browse and play your music.</p>
 
-          <div class="music-player-info">
-            <strong id="player-title">Nothing playing</strong>
-            <span id="player-artist">Choose a song to get started</span>
-          </div>
+        <div class="apple-playlist-list">
 
-          <div class="music-progress">
-            <span id="player-current-time">0:00</span>
-            <div class="progress-track">
-              <div class="progress-fill" id="player-progress"></div>
-            </div>
-            <span id="player-duration">0:00</span>
-          </div>
+          <article class="apple-playlist-card">
+            <h3>Country</h3>
+            <iframe
+              allow="autoplay *; encrypted-media *; fullscreen *; clipboard-write"
+              height="450"
+              style="width:100%;max-width:660px;overflow:hidden;border-radius:12px;border:0;"
+              sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation"
+              src="https://embed.music.apple.com/us/playlist/country/pl.u-jV89bZNTDYlkmP3">
+            </iframe>
+          </article>
 
-          <div class="player-controls">
-            <button id="player-shuffle" aria-label="Shuffle" disabled>⤨</button>
-            <button id="player-previous" aria-label="Previous" disabled>Ⅱ</button>
-            <button id="player-play" class="player-play-button" aria-label="Play" disabled>▶</button>
-            <button id="player-next" aria-label="Next" disabled>Ⅱ</button>
-            <button id="player-repeat" aria-label="Repeat" disabled>⟳</button>
-          </div>
+          <article class="apple-playlist-card">
+            <h3>The Runarounds</h3>
+            <iframe
+              allow="autoplay *; encrypted-media *; fullscreen *; clipboard-write"
+              height="450"
+              style="width:100%;max-width:660px;overflow:hidden;border-radius:12px;border:0;"
+              sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation"
+              src="https://embed.music.apple.com/us/playlist/the-runarounds/pl.u-NpXm9q7T4MNZ9J7">
+            </iframe>
+          </article>
 
-          <div class="music-connect-area">
-            <span class="music-status" id="music-connection-status">NOT CONNECTED</span>
-            <button id="connect-apple-music" type="button">
-              Connect Apple Music
-            </button>
-          </div>
+          <article class="apple-playlist-card">
+            <h3>My Stuff</h3>
+            <iframe
+              allow="autoplay *; encrypted-media *; fullscreen *; clipboard-write"
+              height="450"
+              style="width:100%;max-width:660px;overflow:hidden;border-radius:12px;border:0;"
+              sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation"
+              src="https://embed.music.apple.com/us/playlist/my-stuff/pl.u-xlyNEpPTJRG0yZe">
+            </iframe>
+          </article>
+
         </div>
 
-        <div class="music-library">
-          <h2>Search Music</h2>
-          <input
-            type="search"
-            id="music-search"
-            placeholder="Search songs, artists, albums..."
-          >
-          <div id="music-search-results">
-            <p class="muted">Connect Apple Music to search for music.</p>
-          </div>
-
-          <h2>Your Library</h2>
-          <div class="music-library-grid">
-            <div class="music-library-card">
-              <span>♫</span>
-              <strong>Playlists</strong>
-            </div>
-            <div class="music-library-card">
-              <span>▣</span>
-              <strong>Albums</strong>
-            </div>
-            <div class="music-library-card">
-              <span>♪</span>
-              <strong>Songs</strong>
-            </div>
-            <div class="music-library-card">
-              <span>◷</span>
-              <strong>Recently Played</strong>
-            </div>
-          </div>
-
-          <div id="music-library-content"></div>
-        </div>
+        <p class="muted">
+          Apple Music may ask you to sign in before playing. Playback is handled
+          by Apple's embedded player.
+        </p>
       </section>
     </main>
 
