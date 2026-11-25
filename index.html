@@ -49,25 +49,6 @@
             <button class="text-action" data-page="calendar">OPEN CALENDAR <span>↗</span></button>
           </article>
 
-          <article class="widget reminders">
-            <div class="widget-head"><span class="widget-icon">☷</span><span class="widget-label">REMINDERS</span></div>
-            <div class="widget-value small-value">All clear</div>
-            <div class="muted">Your reminders will appear here</div>
-            <button class="text-action" data-page="reminders">VIEW REMINDERS <span>↗</span></button>
-          </article>
-
-          <article class="widget battery">
-            <div class="widget-head"><span class="widget-icon">▰</span><span class="widget-label">DEVICE</span></div>
-            <div class="widget-value" id="battery-value">—</div>
-            <div class="muted" id="battery-caption">Battery status unavailable</div>
-          </article>
-
-          <article class="widget notifications">
-            <div class="widget-head"><span class="widget-icon">♧</span><span class="widget-label">NOTIFICATIONS</span></div>
-            <div class="widget-value small-value">You're all caught up</div>
-            <div class="muted">Notification integration comes later</div>
-          </article>
-
           <article class="widget news span-2">
             <div class="widget-head"><span class="widget-icon">▤</span><span class="widget-label">TOP STORIES</span><button class="small-link" data-page="news">ALL NEWS ↗</button></div>
             <div class="news-placeholder"><span class="news-line"></span><span class="news-line short"></span><span class="news-line shorter"></span></div>
@@ -94,13 +75,10 @@
 
         <div class="alarm-builder">
           <h2>Create an alarm</h2>
-
           <label for="alarm-time">Alarm time</label>
           <input type="time" id="alarm-time" value="07:00">
-
           <label for="alarm-name">Alarm name</label>
           <input type="text" id="alarm-name" placeholder="Morning alarm">
-
           <label>Repeat on</label>
           <div class="alarm-days">
             <label><input type="checkbox" value="1"> Mon</label>
@@ -111,19 +89,16 @@
             <label><input type="checkbox" value="6"> Sat</label>
             <label><input type="checkbox" value="0"> Sun</label>
           </div>
-
           <label for="alarm-sound">Alarm sound</label>
           <select id="alarm-sound">
             <option value="gentle">Gentle</option>
             <option value="digital">Digital</option>
             <option value="classic">Classic</option>
           </select>
-
           <label class="volume-option">
             <input type="checkbox" id="alarm-gradual" checked>
             Gradually increase volume
           </label>
-
           <button id="add-alarm" type="button">+ Add alarm</button>
         </div>
 
@@ -131,7 +106,6 @@
         <div id="alarm-list">
           <p class="muted">No alarms created yet.</p>
         </div>
-
         <p class="muted">Important: browser alarms may not sound when NIGHTSTAND is closed or suspended. Keep the iPad Clock app as your reliable backup.</p>
       </section>
     </main>
