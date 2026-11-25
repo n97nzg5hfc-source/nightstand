@@ -60,7 +60,8 @@ async function updateWeather() {
   const location = document.querySelector(".weather-foot strong");
 
   try {
-    const url = "https://api.open-meteo.com/v1/forecast?latitude=36.3048&longitude=-86.62&current=temperature_2m,weather_code,is_day&daily=temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit&timezone=America%2FChicago";
+    const url =
+      "https://api.open-meteo.com/v1/forecast?latitude=36.3048&longitude=-86.62&current=temperature_2m,weather_code,is_day&daily=temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit&timezone=America%2FChicago";
 
     const response = await fetch(url, { cache: "no-store" });
     if (!response.ok) throw new Error("Weather request failed");
@@ -101,7 +102,6 @@ async function updateWeather() {
     temp.textContent = `${temperature}°`;
     description.textContent = condition;
     icon.textContent = emoji;
-    location.textContent = "Hendersonville, TN";
 
     const foot = document.querySelector(".weather-foot");
     if (foot) {
@@ -142,7 +142,6 @@ function saveAlarms() {
 
 function getDaysText(days) {
   if (!days || days.length === 0) return "One time";
-
   if (days.length === 7) return "Every day";
 
   if (
@@ -157,7 +156,8 @@ function getDaysText(days) {
   ) return "Weekends";
 
   const names = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  return days.sort((a, b) => a - b).map(day => names[day]).join(", ");
+  return days.slice().sort((a, b) => a - b)
+    .map(day => names[day]).join(", ");
 }
 
 function updateNextAlarm() {
@@ -231,7 +231,6 @@ function resetAlarmForm() {
   editingAlarmId = null;
   addButton.textContent = "+ Add alarm";
   cancelEditButton.hidden = true;
-
   $("alarm-name").value = "";
 
   document.querySelectorAll(".alarm-days input").forEach(input => {
@@ -243,7 +242,6 @@ cancelEditButton.addEventListener("click", resetAlarmForm);
 
 function startEditingAlarm(alarm) {
   editingAlarmId = alarm.id;
-
   $("alarm-time").value = alarm.time;
   $("alarm-name").value = alarm.name || "";
   $("alarm-sound").value = alarm.sound || "gentle";
@@ -283,7 +281,6 @@ function renderAlarms() {
     card.className = "alarm-card";
 
     const info = document.createElement("div");
-
     const time = document.createElement("strong");
     const [hours, minutes] = alarm.time.split(":").map(Number);
     const date = new Date();
@@ -329,18 +326,13 @@ function renderAlarms() {
 
     const edit = document.createElement("button");
     edit.textContent = "Edit";
-
-    edit.addEventListener("click", () => {
-      startEditingAlarm(alarm);
-    });
+    edit.addEventListener("click", () => startEditingAlarm(alarm));
 
     const remove = document.createElement("button");
     remove.textContent = "Delete";
 
     remove.addEventListener("click", () => {
-      if (editingAlarmId === alarm.id) {
-        resetAlarmForm();
-      }
+      if (editingAlarmId === alarm.id) resetAlarmForm();
 
       alarms = alarms.filter(item => item.id !== alarm.id);
       saveAlarms();
@@ -430,7 +422,7 @@ function playAlarmSound(alarm) {
 
   activeAlarm = alarm;
 
-  let start = Date.now();
+  const start = Date.now();
   let note = 0;
 
   const patterns = {
@@ -527,7 +519,6 @@ function showAlarmAlert(alarm) {
   snooze.addEventListener("click", () => {
     snoozedAlarm = alarm;
     snoozeUntil = Date.now() + 10 * 60 * 1000;
-
     stopAlarmSound();
     overlay.remove();
   });
@@ -600,322 +591,228 @@ function checkAlarms() {
 setInterval(checkAlarms, 1000);
 renderAlarms();
 
+// NEWS
+const NEWS_EDITION = "hl=en-US&gl=US&ceid=US:en";
+
+const NEWS_CATEGORIES = {
+  World: "WORLD",
+  US: "NATION",
+  Technology: "TECHNOLOGY",
+  Science: "SCIENCE",
+  Sports: "SPORTS"
+};
+
+const NEWS_CACHE = {};
+let currentNewsCategory = "World";
+let newsLoading = false;
+
+function newsFeedUrl(category) {
+  if (category === "Top Stories") {
+    return `https://news.google.com/rss?${NEWS_EDITION}`;
+  }
+
+  const topic = NEWS_CATEGORIES[category];
+
+  return `https://news.google.com/rss/headlines/section/topic/${topic}?${NEWS_EDITION}`;
+}
+
+async function fetchNews(category) {
+  const feed = newsFeedUrl(category);
+  const api =
+    "https://api.rss2json.com/v1/api.json?rss_url=" +
+    encodeURIComponent(feed);
+
+  const response = await fetch(api, { cache: "no-store" });
+
+  if (!response.ok) {
+    throw new Error("News request failed");
+  }
+
+  const data = await response.json();
+
+  if (data.status !== "ok" || !Array.isArray(data.items)) {
+    throw new Error("News feed unavailable");
+  }
+
+  return data.items;
+}
+
+function makeNewsLink(item, compact = false) {
+  const link = document.createElement("a");
+
+  link.href = item.link || "#";
+  link.target = "_blank";
+  link.rel = "noopener noreferrer";
+  link.textContent = item.title || "Untitled story";
+
+  link.style.cssText = compact
+    ? "display:block;color:#e6edf7;text-decoration:none;font-size:14px;line-height:1.4;padding:9px 0;border-bottom:1px solid #26364e;"
+    : "display:block;color:#e6edf7;text-decoration:none;font-size:17px;line-height:1.45;padding:16px 0;border-bottom:1px solid #26364e;";
+
+  return link;
+}
+
+function createNewsLayout() {
+  const newsPage = $("news-page");
+  if (!newsPage) return;
+
+  const comingCard = newsPage.querySelector(".coming-card");
+  if (!comingCard) return;
+
+  const layout = document.createElement("div");
+  layout.id = "news-interface";
+
+  layout.innerHTML = `
+    <div id="news-categories"
+      style="display:flex;flex-wrap:wrap;gap:8px;margin:22px 0;">
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <strong id="news-heading" style="font-size:17px;">World News</strong>
+      <button id="news-refresh" type="button"
+        style="padding:9px 13px;border:1px solid #50647e;border-radius:9px;background:#172840;color:white;">
+        Refresh
+      </button>
+    </div>
+    <div id="news-list">
+      <p class="muted">Loading headlines...</p>
+    </div>
+  `;
+
+  comingCard.replaceWith(layout);
+
+  const categories = $("news-categories");
+
+  Object.keys(NEWS_CATEGORIES).forEach(category => {
+    const button = document.createElement("button");
+
+    button.type = "button";
+    button.textContent = category;
+    button.dataset.category = category;
+
+    button.style.cssText =
+      "padding:9px 13px;border:1px solid #50647e;border-radius:20px;background:#172840;color:#dce6f5;";
+
+    button.addEventListener("click", () => {
+      loadNews(category, true);
+    });
+
+    categories.append(button);
+  });
+
+  $("news-refresh").addEventListener("click", () => {
+    loadNews(currentNewsCategory, true);
+  });
+
+  loadNews("World");
+}
+
+async function loadNews(category, forceRefresh = false) {
+  if (newsLoading) return;
+
+  newsLoading = true;
+  currentNewsCategory = category;
+
+  const list = $("news-list");
+  const heading = $("news-heading");
+
+  if (!list || !heading) {
+    newsLoading = false;
+    return;
+  }
+
+  heading.textContent = `${category} News`;
+
+  document.querySelectorAll("#news-categories button").forEach(button => {
+    const selected = button.dataset.category === category;
+
+    button.style.background = selected ? "#526987" : "#172840";
+    button.style.borderColor = selected ? "#9bb7dc" : "#50647e";
+  });
+
+  if (!forceRefresh && NEWS_CACHE[category] &&
+      Date.now() - NEWS_CACHE[category].time < 10 * 60 * 1000) {
+    displayNews(list, NEWS_CACHE[category].items);
+    newsLoading = false;
+    return;
+  }
+
+  list.innerHTML = '<p class="muted">Loading headlines...</p>';
+
+  try {
+    const items = await fetchNews(category);
+
+    NEWS_CACHE[category] = {
+      items,
+      time: Date.now()
+    };
+
+    displayNews(list, items);
+  } catch (error) {
+    list.innerHTML = `
+      <p class="muted">
+        News couldn't load right now. Check your internet connection
+        and try Refresh.
+      </p>
+    `;
+  }
+
+  newsLoading = false;
+}
+
+function displayNews(container, items) {
+  container.innerHTML = "";
+
+  if (!items || !items.length) {
+    container.innerHTML = '<p class="muted">No headlines found.</p>';
+    return;
+  }
+
+  items.slice(0, 15).forEach(item => {
+    container.append(makeNewsLink(item));
+  });
+}
+
+// HOME PAGE TOP STORIES
+async function loadHomeNews() {
+  const widget = document.querySelector(".news-placeholder");
+  if (!widget) return;
+
+  const description = widget.parentElement.querySelector(".muted");
+
+  try {
+    const items = await fetchNews("Top Stories");
+
+    widget.innerHTML = "";
+    widget.style.display = "block";
+
+    items.slice(0, 3).forEach(item => {
+      widget.append(makeNewsLink(item, true));
+    });
+
+    if (description) {
+      description.textContent = "Latest headlines · Tap a story to read";
+    }
+  } catch (error) {
+    if (description) {
+      description.textContent = "Headlines are temporarily unavailable.";
+    }
+  }
+}
+
+createNewsLayout();
+loadHomeNews();
+
+setInterval(() => {
+  loadHomeNews();
+
+  if ($("news-page")?.classList.contains("active")) {
+    loadNews(currentNewsCategory, true);
+  }
+}, 15 * 60 * 1000);
+
 // SERVICE WORKER
 if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("./sw.js").catch(() => {});
   });
 }
-
-// =====================================
-// NIGHTSTAND LIVE NEWS
-// =====================================
-
-const NEWS_PROXY = "https://proxy.cors.dev/";
-const NEWS_EDITION = "?hl=en-US&gl=US&ceid=US:en";
-
-const NEWS_CATEGORIES = {
-  "World": "WORLD",
-  "US": "NATION",
-  "Technology": "TECHNOLOGY",
-  "Science": "SCIENCE",
-  "Sports": "SPORTS"
-};
-
-let currentNewsCategory = "World";
-let newsCache = {};
-let newsLoading = false;
-
-const newsPage = $("news-page");
-const newsSection = newsPage.querySelector(".section-page");
-const newsComingCard = newsSection.querySelector(".coming-card");
-
-const newsControls = document.createElement("div");
-newsControls.id = "news-controls";
-newsControls.style.cssText =
-  "display:flex;flex-wrap:wrap;gap:9px;margin:28px 0 20px;";
-
-const newsList = document.createElement("div");
-newsList.id = "news-list";
-newsList.style.cssText =
-  "display:flex;flex-direction:column;gap:12px;";
-
-const newsRefresh = document.createElement("button");
-newsRefresh.textContent = "↻ Refresh news";
-newsRefresh.style.cssText =
-  "margin:0 0 20px;padding:11px 15px;border:1px solid #41536b;border-radius:9px;background:#172840;color:#dce7f5;";
-
-newsComingCard.replaceWith(newsControls, newsRefresh, newsList);
-
-function createNewsButton(label, selected) {
-  const button = document.createElement("button");
-  button.textContent = label;
-  button.style.cssText = `
-    padding:11px 15px;
-    border:1px solid ${selected ? "#9bb7dc" : "#344963"};
-    border-radius:9px;
-    background:${selected ? "#263d5b" : "#122139"};
-    color:#f4f7fc;
-    font-size:12px;
-  `;
-
-  button.addEventListener("click", () => {
-    currentNewsCategory = label;
-    renderNewsButtons();
-    loadNews(label);
-  });
-
-  return button;
-}
-
-function renderNewsButtons() {
-  newsControls.replaceChildren();
-
-  Object.keys(NEWS_CATEGORIES).forEach(category => {
-    newsControls.append(
-      createNewsButton(category, category === currentNewsCategory)
-    );
-  });
-}
-
-function createNewsCard(article) {
-  const card = document.createElement("article");
-
-  card.style.cssText = `
-    padding:19px;
-    border:1px solid #2b3d56;
-    border-radius:13px;
-    background:linear-gradient(145deg,#101d31,#0c1728);
-  `;
-
-  const title = document.createElement("a");
-  title.textContent = article.title;
-  title.href = article.link;
-  title.target = "_blank";
-  title.rel = "noopener noreferrer";
-  title.style.cssText = `
-    display:block;
-    color:#edf4fc;
-    font-size:16px;
-    font-weight:600;
-    line-height:1.4;
-    text-decoration:none;
-  `;
-
-  const details = document.createElement("div");
-  details.textContent = [
-    article.source,
-    article.date
-  ].filter(Boolean).join(" · ");
-
-  details.style.cssText =
-    "margin-top:10px;color:#98a8bf;font-size:11px;";
-
-  const readMore = document.createElement("a");
-  readMore.href = article.link;
-  readMore.target = "_blank";
-  readMore.rel = "noopener noreferrer";
-  readMore.textContent = "READ STORY ↗";
-  readMore.style.cssText = `
-    display:inline-block;
-    margin-top:13px;
-    color:#a9c0df;
-    font-size:10px;
-    font-weight:700;
-    letter-spacing:.1em;
-    text-decoration:none;
-  `;
-
-  card.append(title, details, readMore);
-  return card;
-}
-
-async function getNewsFeed(feedUrl) {
-  const response = await fetch(NEWS_PROXY + feedUrl);
-
-  if (!response.ok) {
-    throw new Error("News feed request failed");
-  }
-
-  const xml = new DOMParser().parseFromString(
-    await response.text(),
-    "text/xml"
-  );
-
-  const root = xml.documentElement;
-
-  if (
-    !["rss", "feed", "RDF"].includes(root.localName) ||
-    xml.querySelector("parsererror")
-  ) {
-    throw new Error("Invalid news feed");
-  }
-
-  const isAtom = root.localName === "feed";
-  const items = [...root.querySelectorAll(
-    isAtom ? "entry" : "item"
-  )];
-
-  return items.map(item => {
-    const title = item.querySelector("title")?.textContent?.trim() || "";
-
-    let link = "";
-
-    if (isAtom) {
-      link =
-        item.querySelector('link[rel="alternate"]')?.getAttribute("href") ||
-        item.querySelector("link")?.getAttribute("href") ||
-        "";
-    } else {
-      link = item.querySelector("link")?.textContent?.trim() || "";
-    }
-
-    const source = item.querySelector("source")?.textContent?.trim() || "";
-
-    const dateText =
-      item.querySelector("pubDate")?.textContent?.trim() ||
-      item.querySelector("published")?.textContent?.trim() ||
-      item.querySelector("updated")?.textContent?.trim() ||
-      "";
-
-    const date = dateText
-      ? new Date(dateText).toLocaleString([], {
-          month: "short",
-          day: "numeric",
-          hour: "numeric",
-          minute: "2-digit"
-        })
-      : "";
-
-    return { title, link, source, date };
-  }).filter(article => article.title && article.link);
-}
-
-async function loadNews(category, forceRefresh = false) {
-  if (newsLoading) return;
-
-  const cached = newsCache[category];
-
-  if (
-    !forceRefresh &&
-    cached &&
-    Date.now() - cached.time < 10 * 60 * 1000
-  ) {
-    displayNews(cached.articles);
-    return;
-  }
-
-  newsLoading = true;
-  newsList.replaceChildren();
-
-  const loading = document.createElement("p");
-  loading.textContent = "Loading the latest headlines…";
-  loading.className = "muted";
-  newsList.append(loading);
-
-  try {
-    const topic = NEWS_CATEGORIES[category];
-
-    const feedUrl =
-      `https://news.google.com/rss/headlines/section/topic/${topic}${NEWS_EDITION}`;
-
-    const articles = await getNewsFeed(feedUrl);
-
-    newsCache[category] = {
-      articles,
-      time: Date.now()
-    };
-
-    displayNews(articles);
-  } catch (error) {
-    newsList.replaceChildren();
-
-    const message = document.createElement("p");
-    message.className = "muted";
-    message.textContent =
-      "News could not load. Check your internet connection and try refreshing.";
-
-    newsList.append(message);
-  } finally {
-    newsLoading = false;
-  }
-}
-
-function displayNews(articles) {
-  newsList.replaceChildren();
-
-  if (!articles.length) {
-    const empty = document.createElement("p");
-    empty.className = "muted";
-    empty.textContent = "No headlines are available right now.";
-    newsList.append(empty);
-    return;
-  }
-
-  articles.forEach(article => {
-    newsList.append(createNewsCard(article));
-  });
-}
-
-// HOME DASHBOARD TOP STORIES
-async function updateHomeNews() {
-  const homeNews = document.querySelector(".news");
-  if (!homeNews) return;
-
-  const placeholder = homeNews.querySelector(".news-placeholder");
-  const description = homeNews.querySelector(".muted");
-
-  try {
-    const feedUrl =
-      `https://news.google.com/rss?${NEWS_EDITION.slice(1)}`;
-
-    const articles = await getNewsFeed(feedUrl);
-
-    if (placeholder) placeholder.remove();
-
-    const headlineArea = document.createElement("div");
-    headlineArea.style.cssText =
-      "display:flex;flex-direction:column;gap:10px;margin-top:15px;";
-
-    articles.slice(0, 3).forEach(article => {
-      const link = document.createElement("a");
-      link.textContent = article.title;
-      link.href = article.link;
-      link.target = "_blank";
-      link.rel = "noopener noreferrer";
-      link.style.cssText = `
-        color:#dce7f5;
-        font-size:12px;
-        line-height:1.4;
-        text-decoration:none;
-      `;
-      headlineArea.append(link);
-    });
-
-    if (description) description.remove();
-
-    const oldHeadlines = homeNews.querySelector(".home-news-headlines");
-    if (oldHeadlines) oldHeadlines.remove();
-
-    headlineArea.className = "home-news-headlines";
-    homeNews.append(headlineArea);
-  } catch (error) {
-    if (description) {
-      description.textContent = "News temporarily unavailable.";
-    }
-  }
-}
-
-newsRefresh.addEventListener("click", () => {
-  loadNews(currentNewsCategory, true);
-});
-
-renderNewsButtons();
-loadNews("World");
-updateHomeNews();
-
-// Refresh news every 15 minutes
-setInterval(() => {
-  loadNews(currentNewsCategory, true);
-  updateHomeNews();
-}, 15 * 60 * 1000);
