@@ -8,6 +8,7 @@ function updateClock() {
   $("clock").textContent = now.toLocaleTimeString([], {
     hour: "2-digit",
     minute: "2-digit",
+    second: "2-digit",
     hour12: true
   });
 
@@ -57,7 +58,6 @@ async function updateWeather() {
   const description = document.querySelector(".weather-main .muted");
   const icon = document.querySelector(".weather-art");
   const location = document.querySelector(".weather-foot strong");
-  const clockWeather = $("clock-weather");
 
   try {
     const url = "https://api.open-meteo.com/v1/forecast?latitude=36.3048&longitude=-86.62&current=temperature_2m,weather_code,is_day&daily=temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit&timezone=America%2FChicago";
@@ -102,7 +102,6 @@ async function updateWeather() {
     description.textContent = condition;
     icon.textContent = emoji;
     location.textContent = "Hendersonville, TN";
-    clockWeather.textContent = `${temperature}° · ${condition}`;
 
     const foot = document.querySelector(".weather-foot");
     if (foot) {
@@ -110,9 +109,8 @@ async function updateWeather() {
         `<span>H: ${high}° &nbsp; L: ${low}°</span><strong>Hendersonville, TN</strong>`;
     }
   } catch (error) {
-    description.textContent = "Weather unavailable";
-    location.textContent = "Check internet connection";
-    clockWeather.textContent = "Weather unavailable";
+    if (description) description.textContent = "Weather unavailable";
+    if (location) location.textContent = "Check internet connection";
   }
 }
 
@@ -164,11 +162,12 @@ function getDaysText(days) {
 
 function updateNextAlarm() {
   const enabled = alarms.filter(alarm => alarm.enabled);
+  const alarmValue = $("alarm-value");
+  const alarmCaption = $("alarm-caption");
 
   if (!enabled.length) {
-    $("clock-alarm").textContent = "Not set";
-    $("alarm-value").textContent = "--:--";
-    $("alarm-caption").textContent = "No alarm scheduled";
+    if (alarmValue) alarmValue.textContent = "--:--";
+    if (alarmCaption) alarmCaption.textContent = "No alarm scheduled";
     return;
   }
 
@@ -198,9 +197,8 @@ function updateNextAlarm() {
   });
 
   if (!nextAlarm) {
-    $("clock-alarm").textContent = "Not set";
-    $("alarm-value").textContent = "--:--";
-    $("alarm-caption").textContent = "No upcoming alarm";
+    if (alarmValue) alarmValue.textContent = "--:--";
+    if (alarmCaption) alarmCaption.textContent = "No upcoming alarm";
     return;
   }
 
@@ -209,10 +207,12 @@ function updateNextAlarm() {
     minute: "2-digit"
   });
 
-  $("clock-alarm").textContent = display;
-  $("alarm-value").textContent = display;
-  $("alarm-caption").textContent =
-    `${nextAlarm.alarm.name} · ${getDaysText(nextAlarm.alarm.days)}`;
+  if (alarmValue) alarmValue.textContent = display;
+
+  if (alarmCaption) {
+    alarmCaption.textContent =
+      `${nextAlarm.alarm.name} · ${getDaysText(nextAlarm.alarm.days)}`;
+  }
 }
 
 // ALARM EDITING CONTROLS
@@ -559,7 +559,6 @@ function checkAlarms() {
   const minuteKey =
     `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}-${now.getHours()}-${now.getMinutes()}`;
 
-  // Check snooze first.
   if (snoozeUntil && Date.now() >= snoozeUntil) {
     const alarmToRestart = snoozedAlarm;
 
@@ -600,24 +599,6 @@ function checkAlarms() {
 
 setInterval(checkAlarms, 1000);
 renderAlarms();
-
-// BATTERY
-if ("getBattery" in navigator) {
-  navigator.getBattery().then(battery => {
-    const render = () => {
-      $("battery-value").textContent =
-        `${Math.round(battery.level * 100)}%`;
-
-      $("battery-caption").textContent =
-        battery.charging ? "Charging" : "On battery";
-    };
-
-    render();
-
-    battery.addEventListener("levelchange", render);
-    battery.addEventListener("chargingchange", render);
-  }).catch(() => {});
-}
 
 // SERVICE WORKER
 if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
